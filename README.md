@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js + Auth0 + NextAuth.js Kimlik Doğrulama Sistemi
 
-## Getting Started
+## Proje Özeti
+Auth0 üzerinden kullanıcı girişinin yapıldığı, JWT tabanlı oturum kontrolü ile sayfa erişimi kısıtlanan, SOLID prensiplerine ve 12Factor ilkelerine uygun, Next.js + NextAuth temelli bir kimlik doğrulama ve yetkilendirme sistemi.
 
-First, run the development server:
+## 🚀 Özellikler
 
+- ✅ **Auth0 OAuth Entegrasyonu** - Güvenli kimlik doğrulama
+- ✅ **JWT Token Yönetimi** - Oturum kontrolü
+- ✅ **Middleware Koruması** - Sayfa erişim kontrolü
+- ✅ **TypeScript Desteği** - Tip güvenliği
+- ✅ **TailwindCSS** - Modern UI tasarımı
+- ✅ **Responsive Tasarım** - Mobil uyumlu
+- ✅ **Session Yönetimi** - Oturum durumu kontrolü
+
+## 🛠️ Teknolojiler
+
+- **Next.js 14** (App Router)
+- **Auth0** (OAuth Provider)
+- **NextAuth.js** (Kimlik doğrulama)
+- **JWT** (JSON Web Token)
+- **TypeScript**
+- **TailwindCSS**
+
+## 📋 Kurulum
+
+### 1. Repository'yi Klonlayın
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/sinanozlen/next-auth.git
+cd next-auth
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Bağımlılıkları Yükleyin
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Auth0 Konfigürasyonu
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. [Auth0 Dashboard](https://manage.auth0.com/)'a gidin
+2. Yeni bir uygulama oluşturun (Single Page Application)
+3. Settings'de şu URL'leri ekleyin:
+   - **Allowed Callback URLs**: `http://localhost:3000/api/auth/callback/auth0`
+   - **Allowed Logout URLs**: `http://localhost:3000`
+   - **Allowed Web Origins**: `http://localhost:3000`
 
-## Learn More
+### 4. Ortam Değişkenlerini Ayarlayın
 
-To learn more about Next.js, take a look at the following resources:
+`.env.local` dosyası oluşturun:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+# Auth0 Configuration
+AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
+AUTH0_BASE_URL='http://localhost:3000'
+AUTH0_ISSUER_BASE_URL='https://YOUR_AUTH0_DOMAIN.auth0.com'
+AUTH0_CLIENT_ID='YOUR_AUTH0_CLIENT_ID'
+AUTH0_CLIENT_SECRET='YOUR_AUTH0_CLIENT_SECRET'
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# NextAuth Configuration
+NEXTAUTH_URL='http://localhost:3000'
+NEXTAUTH_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
+```
 
-## Deploy on Vercel
+### 5. Geliştirme Sunucusunu Başlatın
+```bash
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Proje Yapısı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── auth/
+│   │       └── [...nextauth]/
+│   │           └── route.ts
+│   ├── dashboard/
+│   │   └── page.tsx
+│   ├── login/
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── lib/
+│   └── auth.ts
+├── types/
+│   └── next-auth.d.ts
+└── middleware.ts
+```
+
+## 🔐 Kullanım
+
+1. **Giriş Yapma**: `/login` sayfasından Auth0 ile giriş yapın
+2. **Dashboard**: Başarılı girişten sonra `/dashboard` sayfasına yönlendirilirsiniz
+3. **Çıkış Yapma**: Dashboard'daki "Çıkış Yap" butonunu kullanın
+
+## 🛡️ Güvenlik
+
+- JWT token tabanlı kimlik doğrulama
+- Middleware ile sayfa koruması
+- Auth0 güvenlik standartları
+- HTTPS zorunluluğu (production)
+
+## 🧪 Test
+
+```bash
+# Geliştirme sunucusunu başlat
+npm run dev
+
+# Build test
+npm run build
+
+# Lint kontrolü
+npm run lint
+```
+
+## 📝 Commit Mesajları
+
+- `feat: Auth0 provider entegrasyonu`
+- `feat: JWT middleware implementasyonu`
+- `feat: Dashboard sayfası eklendi`
+- `fix: Session yönetimi düzeltmeleri`
+- `docs: README güncellemesi`
+
+## 🤝 Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'feat: Add amazing feature'`)
+4. Push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request açın
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## 🔗 Bağlantılar
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Auth0 Documentation](https://auth0.com/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org/)
+- [TailwindCSS Documentation](https://tailwindcss.com/docs)
