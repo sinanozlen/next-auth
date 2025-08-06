@@ -87,7 +87,7 @@ export default function HomePage() {
             Test Kullanıcısı:
           </h3>
           <div className="text-sm text-gray-600 space-y-1">
-            <div><strong>Email:</strong> codelogiforce@gmail.com</div>
+            <div><strong>Username:</strong> codelogiforce</div>
             <div><strong>Şifre:</strong> 1253=*3-494%4eDd</div>
           </div>
         </div>

@@ -19,6 +19,45 @@ export const authOptions = {
         try {
           console.log('Attempting Auth0 login with:', credentials.email);
           
+          // Kullanıcının girdiği bilgileri doğrula
+          let username = credentials.email;
+          
+          // Eğer email formatında değilse, username olarak kullan
+          if (!username.includes('@')) {
+            username = username; // Direkt username olarak kullan
+          } else {
+            // Email formatındaysa, tam email'i kontrol et
+            const fullEmail = username;
+            if (fullEmail !== 'codelogiforce@gmail.com') {
+              console.log('❌ Invalid email format:', fullEmail);
+              return null;
+            }
+            // Sadece doğru email ise username'i çıkar
+            username = fullEmail.split('@')[0];
+          }
+          
+          // Sadece doğru kullanıcı bilgileriyle giriş yapılabilir
+          const correctUsername = 'codelogiforce';
+          const correctPassword = '1253=*3-494%4eDd';
+          
+          console.log('Checking credentials:', { 
+            providedUsername: username, 
+            providedPassword: credentials.password,
+            correctUsername,
+            correctPassword,
+            usernameMatch: username === correctUsername,
+            passwordMatch: credentials.password === correctPassword
+          });
+          
+          if (username !== correctUsername || credentials.password !== correctPassword) {
+            console.log('❌ Invalid credentials - Access denied');
+            return null;
+          }
+          
+          console.log('✅ Valid credentials - Access granted');
+          
+          console.log('Using username for Auth0:', username);
+          
           // Arc'da çalışan JSON'a göre Auth0 token endpoint'e istek at
           const response = await fetch('https://dev-s3ql6fuorkk3gc6t.us.auth0.com/oauth/token', {
             method: 'POST',
@@ -27,8 +66,8 @@ export const authOptions = {
             },
             body: JSON.stringify({
               grant_type: 'password',
-              username: 'codelogiforce', // Sabit username kullanıyoruz
-              password: '1253=*3-494%4eDd', // Sabit password kullanıyoruz
+              username: username, // Kullanıcının girdiği bilgiyi kullan
+              password: credentials.password, // Kullanıcının girdiği şifreyi kullan
               scope: 'openid profile email',
               client_id: 'QfTgCHeW0ZA45at9rGO5jmuFbetZNabq',
               client_secret: 't3rM2KjaULb5FpWq4Sc23FNl6u8dSxcNvEQAqT1e35hyaN5MCSHZF7gCEUJ4Qoxd',

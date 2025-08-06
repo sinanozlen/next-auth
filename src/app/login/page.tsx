@@ -9,8 +9,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('codelogiforce@gmail.com');
-  const [password, setPassword] = useState('1253=*3-494%4eDd');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in

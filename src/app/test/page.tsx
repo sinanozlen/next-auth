@@ -37,7 +37,7 @@ export default function TestPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: 'codelogiforce@gmail.com',
+          email: 'codelogiforce',
           password: '1253=*3-494%4eDd',
           redirect: false
         }),
