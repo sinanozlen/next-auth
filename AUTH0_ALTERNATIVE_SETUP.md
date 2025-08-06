@@ -45,8 +45,7 @@ AUTH0_CLIENT_SECRET='YENİ_M2M_CLIENT_SECRET'
 NEXTAUTH_URL='http://localhost:3002'
 NEXTAUTH_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
 
-# MongoDB Configuration
-MONGODB_URI='mongodb://localhost:27017/next-auth-app'
+
 ```
 
 ## 4. Test Kullanıcısı

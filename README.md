@@ -1,14 +1,12 @@
-# Next.js + Auth0 + NextAuth.js + MongoDB Kimlik Doğrulama Sistemi
+# Next.js + Auth0 + NextAuth.js Kimlik Doğrulama Sistemi
 
 ## 🎯 Proje Özeti
-Auth0 üzerinden kullanıcı girişinin yapıldığı, JWT tabanlı oturum kontrolü ile sayfa erişimi kısıtlanan, rol bazlı yetkilendirme sistemi ile MongoDB entegrasyonu olan, SOLID prensiplerine ve 12Factor ilkelerine uygun, Next.js + NextAuth temelli bir kimlik doğrulama ve yetkilendirme sistemi.
+Auth0 üzerinden kullanıcı girişinin yapıldığı, JWT tabanlı oturum kontrolü ile sayfa erişimi kısıtlanan, rol bazlı yetkilendirme sistemi ile SOLID prensiplerine ve 12Factor ilkelerine uygun, Next.js + NextAuth temelli bir kimlik doğrulama ve yetkilendirme sistemi.
 
 ## 🛠️ Teknolojiler & Araçlar
 - **Next.js 14** (App Router)
 - **Auth0** (OAuth Provider)
 - **NextAuth.js** (Kimlik doğrulama)
-- **MongoDB** (Veritabanı)
-- **Mongoose** (ODM)
 - **JWT** (JSON Web Token)
 - **TypeScript**
 - **TailwindCSS**
@@ -29,10 +27,9 @@ Auth0 üzerinden kullanıcı girişinin yapıldığı, JWT tabanlı oturum kontr
 - ✅ API seviyesinde yetkilendirme
 
 ### 🗄️ Veritabanı
-- ✅ MongoDB entegrasyonu
-- ✅ Mongoose ODM
-- ✅ Otomatik kullanıcı senkronizasyonu
-- ✅ Bağlantı optimizasyonu
+- ✅ JWT tabanlı oturum yönetimi
+- ✅ Auth0 kullanıcı bilgileri
+- ✅ Otomatik oturum kontrolü
 
 ### 🛡️ Güvenlik
 - ✅ Middleware ile sayfa koruması
@@ -62,12 +59,9 @@ cp env.example .env.local
 4. Logout URL: `http://localhost:3000`
 5. Web Origins: `http://localhost:3000`
 
-### 3. MongoDB Kurulumu
-1. [MongoDB Atlas](https://www.mongodb.com/atlas) (önerilen) veya local MongoDB
-2. Connection string'i alın
-3. `.env.local` dosyasına ekleyin
 
-### 4. Environment Değişkenleri
+
+### 3. Environment Değişkenleri
 ```env
 # Auth0 Configuration
 AUTH0_SECRET='your-32-byte-secret'
@@ -79,12 +73,9 @@ AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
 # NextAuth Configuration
 NEXTAUTH_URL='http://localhost:3000'
 NEXTAUTH_SECRET='your-32-byte-secret'
-
-# MongoDB Configuration
-MONGODB_URI='mongodb://localhost:27017/next-auth-app'
 ```
 
-### 5. Çalıştırma
+### 4. Çalıştırma
 ```bash
 npm run dev
 ```
@@ -109,10 +100,8 @@ next-auth/
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   │   └── [...nextauth]/
-│   │   │   ├── users/
-│   │   │   └── admin/
+│   │   │   └── auth/
+│   │   │       └── [...nextauth]/
 │   │   ├── dashboard/
 │   │   ├── login/
 │   │   ├── test/
@@ -120,10 +109,7 @@ next-auth/
 │   ├── components/
 │   ├── lib/
 │   │   ├── auth.ts
-│   │   ├── mongodb.ts
 │   │   └── middleware.ts
-│   ├── models/
-│   │   └── User.ts
 │   └── types/
 ├── public/
 ├── .env.example
@@ -136,41 +122,37 @@ next-auth/
 ### Kimlik Doğrulama
 - `GET/POST /api/auth/[...nextauth]` - NextAuth.js endpoints
 
-### Kullanıcı Yönetimi
-- `GET /api/users` - Tüm kullanıcıları listele (Admin only)
-- `POST /api/admin/setup` - Test kullanıcıları oluştur
-
 ## 🛡️ Güvenlik Özellikleri
 
 ### Middleware Koruması
 - `/dashboard` - Kimlik doğrulama gerekli
-- `/api/users` - Admin yetkisi gerekli
-- `/api/admin/*` - Admin yetkisi gerekli
+- `/test` - Kimlik doğrulama gerekli
 
 ### Rol Bazlı Erişim
-- **Admin**: Tüm sayfalara erişim, kullanıcı yönetimi
-- **User**: Sadece dashboard'a erişim
+- **Admin**: Tüm sayfalara erişim
+- **User**: Dashboard ve test sayfalarına erişim
 
-## 📊 Veritabanı Şeması
+## 📊 Oturum Yönetimi
 
-### User Collection
+### JWT Token Yapısı
 ```javascript
 {
-  _id: ObjectId,
-  email: String (required, unique),
-  name: String (optional),
-  image: String (optional),
-  auth0Id: String (required, unique),
-  role: String (enum: ['admin', 'user'], default: 'user'),
-  createdAt: Date,
-  updatedAt: Date
+  user: {
+    id: String,
+    email: String,
+    name: String,
+    image: String,
+    role: String
+  },
+  accessToken: String,
+  expires: String
 }
 ```
 
 ## 🧪 Test Etme
 
 ### 1. Test Sayfası
-`http://localhost:3000/test` adresine gidin ve test kullanıcılarını oluşturun.
+`http://localhost:3000/test` adresine gidin ve oturum bilgilerini kontrol edin.
 
 ### 2. Giriş Testi
 1. Ana sayfaya gidin
@@ -179,14 +161,13 @@ next-auth/
 4. Dashboard'da rol bazlı içeriği kontrol edin
 
 ### 3. Rol Testi
-- **Admin**: Tüm kullanıcıları görebilir
-- **User**: Sadece kendi bilgilerini görebilir
+- **Admin**: Tüm sayfalara erişebilir
+- **User**: Dashboard ve test sayfalarına erişebilir
 
 ## 📚 Dokümantasyon
 
 - [Auth0 Kurulum Rehberi](AUTH0_SETUP.md)
-- [MongoDB Kurulum Rehberi](MONGODB_SETUP.md)
-- [Proje Detayları](Readme_Peoject.md)
+- [Auth0 Alternatif Kurulum](AUTH0_ALTERNATIVE_SETUP.md)
 
 ## 🤝 Katkıda Bulunma
 
@@ -207,9 +188,7 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 1. **"Invalid redirect_uri" hatası**
    - Auth0 Settings'de callback URL'yi kontrol edin
 
-2. **MongoDB bağlantı hatası**
-   - Connection string'i kontrol edin
-   - MongoDB servisinin çalıştığını kontrol edin
+
 
 3. **"OAuthSignin" hatası**
    - Auth0 yapılandırmasını kontrol edin
