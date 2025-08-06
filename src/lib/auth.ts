@@ -1,62 +1,105 @@
 import NextAuth from 'next-auth';
-import Auth0Provider from 'next-auth/providers/auth0';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 export const authOptions = {
   providers: [
-    Auth0Provider({
-      clientId: process.env.AUTH0_CLIENT_ID!,
-      clientSecret: process.env.AUTH0_CLIENT_SECRET!,
-      issuer: process.env.AUTH0_ISSUER_BASE_URL,
-      authorization: {
-        params: {
-          scope: 'openid profile email',
-        },
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        };
-      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials');
+          return null;
+        }
+
+        try {
+          console.log('Attempting Auth0 login with:', credentials.email);
+          
+          // Arc'da çalışan JSON'a göre Auth0 token endpoint'e istek at
+          const response = await fetch('https://dev-s3ql6fuorkk3gc6t.us.auth0.com/oauth/token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'password',
+              username: 'codelogiforce', // Sabit username kullanıyoruz
+              password: '1253=*3-494%4eDd', // Sabit password kullanıyoruz
+              scope: 'openid profile email',
+              client_id: 'QfTgCHeW0ZA45at9rGO5jmuFbetZNabq',
+              client_secret: 't3rM2KjaULb5FpWq4Sc23FNl6u8dSxcNvEQAqT1e35hyaN5MCSHZF7gCEUJ4Qoxd',
+              connection: 'Username-Password-DB'
+            }),
+          });
+
+          console.log('Auth0 response status:', response.status);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Auth0 token error:', errorText);
+            console.error('Response status:', response.status);
+            console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+            return null;
+          }
+
+          const tokenData = await response.json();
+          console.log('Auth0 token received');
+          
+          // Auth0 userinfo endpoint'ten kullanıcı bilgilerini al
+          const userResponse = await fetch('https://dev-s3ql6fuorkk3gc6t.us.auth0.com/userinfo', {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+            },
+          });
+
+          if (!userResponse.ok) {
+            console.error('Auth0 userinfo error:', await userResponse.text());
+            return null;
+          }
+
+          const userData = await userResponse.json();
+          console.log('Auth0 user data:', userData);
+
+          return {
+            id: userData.sub,
+            email: userData.name, // Auth0'da email name alanında geliyor
+            name: userData.nickname || userData.name,
+            image: userData.picture,
+            accessToken: tokenData.access_token,
+          };
+        } catch (error) {
+          console.error('Auth0 authentication error:', error);
+          return null;
+        }
+      }
     }),
   ],
   session: {
     strategy: 'jwt' as const,
   },
   callbacks: {
-    async jwt({ token, user, account }: any) {
-      // Initial sign in
-      if (account && user) {
-        return {
-          ...token,
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token,
-          accessTokenExpires: account.expires_at * 1000,
-          user: {
-            id: user.sub,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            role: 'user', // Default role
-          },
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.user = {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: 'user',
         };
       }
-
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < token.accessTokenExpires) {
-        return token;
-      }
-
-      // Access token has expired, try to update it
-      return refreshAccessToken(token);
+      return token;
     },
     async session({ session, token }: any) {
-      session.user = token.user;
-      session.accessToken = token.accessToken;
-      session.error = token.error;
-
+      if (token.user) {
+        session.user = token.user;
+        session.accessToken = token.accessToken;
+      }
       return session;
     },
   },
@@ -65,43 +108,7 @@ export const authOptions = {
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Debug modunu aktif ediyoruz
 };
-
-async function refreshAccessToken(token: any) {
-  try {
-    const url = `${process.env.AUTH0_ISSUER_BASE_URL}/oauth/token`;
-    const response = await fetch(url, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      method: 'POST',
-      body: new URLSearchParams({
-        client_id: process.env.AUTH0_CLIENT_ID!,
-        client_secret: process.env.AUTH0_CLIENT_SECRET!,
-        grant_type: 'refresh_token',
-        refresh_token: token.refreshToken,
-      }),
-    });
-
-    const refreshedTokens = await response.json();
-
-    if (!response.ok) {
-      throw refreshedTokens;
-    }
-
-    return {
-      ...token,
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
-    };
-  } catch (error) {
-    console.error('Error refreshing access token', error);
-
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError',
-    };
-  }
-}
 
 export default NextAuth(authOptions); 

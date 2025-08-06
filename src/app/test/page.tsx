@@ -8,6 +8,8 @@ export default function TestPage() {
   const { data: session, status } = useSession();
   const [configStatus, setConfigStatus] = useState<any>(null);
   const [loadingConfig, setLoadingConfig] = useState(false);
+  const [tokenTestStatus, setTokenTestStatus] = useState<any>(null);
+  const [loadingTokenTest, setLoadingTokenTest] = useState(false);
 
   const checkAuth0Config = async () => {
     setLoadingConfig(true);
@@ -23,6 +25,33 @@ export default function TestPage() {
       });
     } finally {
       setLoadingConfig(false);
+    }
+  };
+
+  const testAuth0Token = async () => {
+    setLoadingTokenTest(true);
+    try {
+      const response = await fetch('/api/auth/signin/credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'codelogiforce@gmail.com',
+          password: '1253=*3-494%4eDd',
+          redirect: false
+        }),
+      });
+      const data = await response.json();
+      setTokenTestStatus(data);
+    } catch (error) {
+      setTokenTestStatus({
+        success: false,
+        message: 'Token test edilemedi',
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
+      });
+    } finally {
+      setLoadingTokenTest(false);
     }
   };
 
@@ -97,6 +126,37 @@ export default function TestPage() {
               )}
             </div>
 
+            {/* Auth0 Token Test */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Auth0 Token Testi</h2>
+              <button
+                onClick={testAuth0Token}
+                disabled={loadingTokenTest}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+              >
+                {loadingTokenTest ? 'Test ediliyor...' : 'Token Test Et'}
+              </button>
+              
+              {tokenTestStatus && (
+                <div className="mt-4 p-4 rounded-md border">
+                  <div className={`text-sm font-medium ${tokenTestStatus.success ? 'text-green-800' : 'text-red-800'}`}>
+                    {tokenTestStatus.success ? 'Token başarıyla alındı!' : 'Token alınamadı'}
+                  </div>
+                  {tokenTestStatus.error && (
+                    <div className="mt-2 text-sm text-red-600">
+                      Hata: {tokenTestStatus.error}
+                    </div>
+                  )}
+                  <details className="mt-4">
+                    <summary className="text-sm font-medium text-gray-700 cursor-pointer">Detaylı Sonuç</summary>
+                    <pre className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-auto">
+                      {JSON.stringify(tokenTestStatus, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              )}
+            </div>
+
             {/* Session Info */}
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-2">Oturum Bilgileri</h2>
@@ -126,7 +186,7 @@ export default function TestPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Rol</label>
-                    <p className="mt-1 text-sm text-gray-900">{session?.user?.role || 'user'}</p>
+                    <p className="mt-1 text-sm text-gray-900">{(session?.user as any)?.role || 'user'}</p>
                   </div>
                 </div>
               </div>

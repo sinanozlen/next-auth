@@ -1,123 +1,98 @@
 # Auth0 Kurulum Rehberi
 
-Bu rehber, Next.js projenizde Auth0 entegrasyonunu tamamlamak için gerekli adımları içerir.
+## Auth0 Uygulama Ayarları
 
-## 1. Auth0 Hesabı Oluşturma
+Auth0 panosunda aşağıdaki ayarları yapmanız gerekiyor:
 
-1. [Auth0 Dashboard](https://auth0.com/) adresine gidin
-2. Ücretsiz hesap oluşturun
-3. Yeni bir tenant (kiracı) oluşturun
+### 1. Application URIs Bölümü
 
-## 2. Auth0 Application Oluşturma
+#### Application Login URI (Uygulama Giriş URI'si)
+```
+BOŞ BIRAKIN - Bu alanı doldurmayın
+```
+**Not:** Bu alan sadece production ortamında kullanılır. Development için boş bırakın.
 
-1. Auth0 Dashboard'da **Applications** > **Applications** bölümüne gidin
-2. **+ Create Application** butonuna tıklayın
-3. Application adını girin (örn: "Next.js App")
-4. **Single Page Application** seçin
-5. **Create** butonuna tıklayın
+#### Allowed Callback URLs (İzin Verilen Geri Çağırma URL'leri)
+```
+http://localhost:3002
+```
 
-## 3. Auth0 Application Ayarları
+#### Allowed Logout URLs (İzin Verilen Çıkış URL'leri)
+```
+http://localhost:3002
+```
 
-### Settings Sekmesi:
-- **Allowed Callback URLs**: `http://localhost:3000/api/auth/callback/auth0`
-- **Allowed Logout URLs**: `http://localhost:3000`
-- **Allowed Web Origins**: `http://localhost:3000`
-- **Allowed Origins (CORS)**: `http://localhost:3000`
+#### Allowed Web Origins (İzin Verilen Web Kökenleri)
+```
+http://localhost:3002
+```
 
-### Advanced Settings > OAuth:
-- **JsonWebToken Signature Algorithm**: `RS256`
-- **OIDC Conformant**: `Enabled`
+### 2. Environment Variables
 
-## 4. Environment Variables
-
-Proje kök dizininde `.env.local` dosyası oluşturun:
+`.env.local` dosyanızda aşağıdaki değerleri kullanın:
 
 ```env
 # Auth0 Configuration
 AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
-AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL='https://YOUR_AUTH0_DOMAIN.auth0.com'
-AUTH0_CLIENT_ID='YOUR_AUTH0_CLIENT_ID'
-AUTH0_CLIENT_SECRET='YOUR_AUTH0_CLIENT_SECRET'
+AUTH0_BASE_URL='http://localhost:3002'
+AUTH0_ISSUER_BASE_URL='https://dev-s3ql6fuorkk3gc6t.us.auth0.com'
+AUTH0_CLIENT_ID='QfTgCHeW0ZA45at9rGO5jmuFbetZNabq'
+AUTH0_CLIENT_SECRET='t3rM2KjaULb5FpWq4Sc23FNl6u8dSxcNvEQAqT1e35hyaN5MCSHZF7gCEUJ4Qoxd'
 
 # NextAuth Configuration
-NEXTAUTH_URL='http://localhost:3000'
+NEXTAUTH_URL='http://localhost:3002'
 NEXTAUTH_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
 
-# MongoDB Configuration (opsiyonel)
+# MongoDB Configuration
 MONGODB_URI='mongodb://localhost:27017/next-auth-app'
 ```
 
-### Değerleri Nereden Alacağınız:
-
-1. **AUTH0_ISSUER_BASE_URL**: Auth0 Dashboard > Applications > Your App > Settings > Domain
-2. **AUTH0_CLIENT_ID**: Auth0 Dashboard > Applications > Your App > Settings > Client ID
-3. **AUTH0_CLIENT_SECRET**: Auth0 Dashboard > Applications > Your App > Settings > Client Secret
-
-### Secret Değerleri Oluşturma:
-
-Terminal'de şu komutu çalıştırın:
-```bash
-openssl rand -hex 32
-```
-
-Bu komutun çıktısını hem `AUTH0_SECRET` hem de `NEXTAUTH_SECRET` için kullanın.
-
-## 5. Test Kullanıcısı Oluşturma
-
-1. Auth0 Dashboard > **User Management** > **Users**
-2. **+ Create User** butonuna tıklayın
-3. Kullanıcı bilgilerini girin:
-   - **Email**: test@gmail.com
-   - **Password**: 151548pPo0s02=^.94
-   - **Connection**: Username-Password-Authentication
-
-## 6. Projeyi Çalıştırma
+### 3. Projeyi Çalıştırma
 
 ```bash
+# Bağımlılıkları yükleyin
+npm install
+
+# Environment dosyasını oluşturun
+cp env.example .env.local
+
+# Projeyi port 3002'de başlatın
 npm run dev
 ```
 
-## 7. Test Etme
+### 4. Test Kullanıcısı
 
-1. `http://localhost:3000` adresine gidin
-2. "Auth0 ile Giriş Yap" butonuna tıklayın
-3. Auth0 login sayfasına yönlendirileceksiniz
-4. Test kullanıcısı bilgileriyle giriş yapın
-5. Başarılı girişten sonra dashboard'a yönlendirileceksiniz
+Auth0'da oluşturduğunuz test kullanıcısı:
+- **Email**: `codelogiforce`
+- **Şifre**: `1253=*3-494%4eDd`
 
-## 8. Sorun Giderme
+### 5. Önemli Notlar
 
-### "only valid absolute URLs can be requested" Hatası
+- Proje artık **port 3002**'de çalışacak
+- **Application Login URI alanını BOŞ BIRAKIN** - Bu HTTPS hatası verir
+- Auth0 panosundaki diğer URL'ler `http://localhost:3002` ile başlamalı
+- Connection type: `Username-Password-DB` olarak ayarlanmalı
+- Grant type: `password` kullanılıyor
 
-Bu hata genellikle şu sebeplerden kaynaklanır:
+### 6. Test Etme
 
-1. **AUTH0_ISSUER_BASE_URL yanlış format**: `https://` ile başlamalı
-2. **Environment variables eksik**: Tüm gerekli değişkenlerin tanımlı olduğundan emin olun
-3. **Auth0 Application ayarları**: Callback URL'lerin doğru olduğundan emin olun
+1. `http://localhost:3002` adresine gidin
+2. Login sayfasına yönlendirileceksiniz
+3. Test kullanıcısı bilgileriyle giriş yapın
+4. Dashboard'a yönlendirileceksiniz
 
-### Test Sayfası
+### 7. Sorun Giderme
 
-`http://localhost:3000/test` adresine giderek Auth0 yapılandırmasını test edebilirsiniz.
+Eğer sorun yaşarsanız:
+1. **Application Login URI alanının BOŞ olduğundan emin olun**
+2. Auth0 panosundaki diğer URL'lerin doğru olduğunu kontrol edin
+3. Environment variables'ların doğru ayarlandığını kontrol edin
+4. Port 3002'nin boş olduğundan emin olun
+5. Browser console'da hata mesajlarını kontrol edin
 
-## 9. Production Deployment
+### 8. HTTPS Hatası Çözümü
 
-Production'a deploy ederken:
-
-1. **AUTH0_BASE_URL** ve **NEXTAUTH_URL** değerlerini production URL'inizle değiştirin
-2. Auth0 Dashboard'da **Allowed Callback URLs** ve **Allowed Logout URLs**'i güncelleyin
-3. **AUTH0_SECRET** ve **NEXTAUTH_SECRET** değerlerini yeniden oluşturun
-
-## 10. Güvenlik Notları
-
-- `.env.local` dosyasını asla git'e commit etmeyin
-- Production'da güçlü secret değerleri kullanın
-- Auth0 Application ayarlarını düzenli olarak kontrol edin
-- HTTPS kullanın (production'da)
-
-## Yardım
-
-Sorun yaşarsanız:
-1. `/test` sayfasındaki yapılandırma kontrolünü kullanın
-2. Browser console'da hata mesajlarını kontrol edin
-3. Auth0 Dashboard'da Application logs'ları kontrol edin 
+Eğer "absolute-https-uri-or-empty" hatası alırsanız:
+- **Application Login URI** alanını tamamen boş bırakın
+- Bu alan sadece production ortamında HTTPS URL'leri için kullanılır
+- Development ortamında bu alan boş olmalıdır 

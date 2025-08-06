@@ -2,12 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 export default function HomePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Eğer kullanıcı zaten giriş yapmışsa dashboard'a yönlendir
@@ -15,19 +14,6 @@ export default function HomePage() {
       router.push('/dashboard');
     }
   }, [session, router]);
-
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      await signIn('auth0', {
-        callbackUrl: 'http://localhost:3000/dashboard',
-        redirect: true,
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      setIsLoading(false);
-    }
-  };
 
   // Loading durumu
   if (status === 'loading') {
@@ -83,27 +69,16 @@ export default function HomePage() {
           </div>
           
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            ✅ Auth0 konfigürasyonu tamamlandı
+            ✅ Auth0 Credentials Provider kuruldu
           </div>
         </div>
         
         <div className="text-center">
           <button
-            onClick={handleLogin}
-            disabled={isLoading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => router.push('/login')}
+            className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
           >
-            {isLoading ? (
-              <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Giriş yapılıyor...
-              </div>
-            ) : (
-              'Auth0 ile Giriş Yap'
-            )}
+            Giriş Yap
           </button>
         </div>
         
@@ -112,17 +87,29 @@ export default function HomePage() {
             Test Kullanıcısı:
           </h3>
           <div className="text-sm text-gray-600 space-y-1">
-            <div><strong>Email:</strong> test@gmail.com</div>
-            <div><strong>Şifre:</strong> 151548pPo0s02=^.94</div>
+            <div><strong>Email:</strong> codelogiforce@gmail.com</div>
+            <div><strong>Şifre:</strong> 1253=*3-494%4eDd</div>
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <a
             href="/test"
-            className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+            className="text-indigo-600 hover:text-indigo-500 text-sm font-medium block"
           >
             Auth0 Yapılandırmasını Test Et →
+          </a>
+          <a
+            href="/setup"
+            className="text-blue-600 hover:text-blue-500 text-sm font-medium block"
+          >
+            Kurulum Rehberi →
+          </a>
+          <a
+            href="/AUTH0_SETUP.md"
+            className="text-gray-500 hover:text-gray-700 text-xs block"
+          >
+            Detaylı Dokümantasyon
           </a>
         </div>
       </div>

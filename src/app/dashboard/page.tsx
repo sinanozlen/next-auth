@@ -15,10 +15,10 @@ export default function DashboardPage() {
   }, [status, router]);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: 'http://localhost:3001' });
+    await signOut({ callbackUrl: 'http://localhost:3002' });
   };
 
-  const isAdmin = session?.user?.role === 'admin';
+  const isAdmin = (session?.user as any)?.role === 'admin';
 
   if (status === 'loading') {
     return (
@@ -92,11 +92,11 @@ export default function DashboardPage() {
                 <div className="flex justify-between">
                   <span className="font-medium">Rol:</span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    session.user?.role === 'admin' 
+                    (session.user as any)?.role === 'admin' 
                       ? 'bg-red-100 text-red-800' 
                       : 'bg-green-100 text-green-800'
                   }`}>
-                    {session.user?.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                    {(session.user as any)?.role === 'admin' ? 'Admin' : 'Kullanıcı'}
                   </span>
                 </div>
                 <div className="flex justify-between">

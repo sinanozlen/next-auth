@@ -9,6 +9,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('codelogiforce@gmail.com');
+  const [password, setPassword] = useState('1253=*3-494%4eDd');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -22,29 +24,8 @@ export default function LoginPage() {
     const errorParam = searchParams.get('error');
     if (errorParam) {
       switch (errorParam) {
-        case 'OAuthSignin':
-          setError('Giriş işlemi başlatılamadı. Lütfen tekrar deneyin.');
-          break;
-        case 'OAuthCallback':
-          setError('Giriş işlemi tamamlanamadı. Lütfen tekrar deneyin.');
-          break;
-        case 'OAuthCreateAccount':
-          setError('Hesap oluşturulamadı. Lütfen tekrar deneyin.');
-          break;
-        case 'EmailCreateAccount':
-          setError('E-posta hesabı oluşturulamadı.');
-          break;
-        case 'Callback':
-          setError('Geri dönüş işlemi başarısız.');
-          break;
-        case 'OAuthAccountNotLinked':
-          setError('Bu e-posta adresi başka bir hesap ile ilişkili.');
-          break;
-        case 'EmailSignin':
-          setError('E-posta gönderilemedi.');
-          break;
         case 'CredentialsSignin':
-          setError('Giriş bilgileri hatalı.');
+          setError('Giriş bilgileri hatalı. Lütfen email ve şifrenizi kontrol edin.');
           break;
         case 'SessionRequired':
           setError('Bu sayfaya erişmek için giriş yapmanız gerekiyor.');
@@ -55,18 +36,27 @@ export default function LoginPage() {
     }
   }, [router, searchParams]);
 
-  const handleLogin = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      const result = await signIn('auth0', {
-        callbackUrl: 'http://localhost:3000/dashboard',
-        redirect: true,
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
+
+      if (result?.error) {
+        setError('Giriş bilgileri hatalı. Lütfen email ve şifrenizi kontrol edin.');
+      } else if (result?.ok) {
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error('Login error:', error);
       setError('Giriş işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -83,7 +73,8 @@ export default function LoginPage() {
           </p>
         </div>
         
-        <div className="mt-8 space-y-6">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {/* Giriş Hatası */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
               <div className="flex">
@@ -99,9 +90,45 @@ export default function LoginPage() {
             </div>
           )}
           
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email adresi
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="ornek@email.com"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Şifre
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Şifrenizi girin"
+              />
+            </div>
+          </div>
+          
           <div>
             <button
-              onClick={handleLogin}
+              type="submit"
               disabled={isLoading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
@@ -114,7 +141,7 @@ export default function LoginPage() {
                   Giriş yapılıyor...
                 </div>
               ) : (
-                'Auth0 ile Giriş Yap'
+                'Giriş Yap'
               )}
             </button>
           </div>
@@ -124,7 +151,7 @@ export default function LoginPage() {
               Güvenli kimlik doğrulama için Auth0 kullanıyoruz
             </p>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
