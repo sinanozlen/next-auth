@@ -7,10 +7,23 @@ export const authOptions = {
       clientId: process.env.AUTH0_CLIENT_ID!,
       clientSecret: process.env.AUTH0_CLIENT_SECRET!,
       issuer: process.env.AUTH0_ISSUER_BASE_URL,
+      authorization: {
+        params: {
+          scope: 'openid profile email',
+        },
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
   ],
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
   },
   callbacks: {
     async jwt({ token, user, account }: any) {
@@ -21,7 +34,13 @@ export const authOptions = {
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at * 1000,
-          user,
+          user: {
+            id: user.sub,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: 'user', // Default role
+          },
         };
       }
 
@@ -46,6 +65,7 @@ export const authOptions = {
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
 
 async function refreshAccessToken(token: any) {

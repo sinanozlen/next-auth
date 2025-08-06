@@ -15,11 +15,9 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    // Protected routes
+    // Protected routes only
     '/dashboard/:path*',
     '/profile/:path*',
     '/admin/:path*',
-    // Exclude auth routes
-    '/((?!api|_next/static|_next/image|favicon.ico|login).*)',
   ],
 }; 

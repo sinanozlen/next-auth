@@ -15,8 +15,10 @@ export default function DashboardPage() {
   }, [status, router]);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/login' });
+    await signOut({ callbackUrl: 'http://localhost:3001' });
   };
+
+  const isAdmin = session?.user?.role === 'admin';
 
   if (status === 'loading') {
     return (
@@ -32,16 +34,23 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
+      {/* Navbar */}
+      <nav className="bg-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Dashboard
-            </h1>
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">
+                🎉 Hoş Geldiniz!
+              </h1>
+            </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-700">
-                Hoş geldin, {session.user?.name || session.user?.email}
+                {session.user?.name || session.user?.email}
+                {isAdmin && (
+                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Admin
+                  </span>
+                )}
               </div>
               <button
                 onClick={handleSignOut}
@@ -52,38 +61,75 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="border-4 border-dashed border-gray-200 rounded-lg p-8">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                Başarıyla giriş yaptınız! 🎉
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                🎉 Başarıyla Giriş Yaptınız!
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-lg text-gray-600">
                 Bu sayfa sadece kimlik doğrulaması yapılmış kullanıcılar tarafından görüntülenebilir.
               </p>
-              
-              <div className="bg-white shadow rounded-lg p-6 max-w-md mx-auto">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Kullanıcı Bilgileri
-                </h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div>
-                    <span className="font-medium">Ad:</span> {session.user?.name || 'Belirtilmemiş'}
-                  </div>
-                  <div>
-                    <span className="font-medium">E-posta:</span> {session.user?.email || 'Belirtilmemiş'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Durum:</span> 
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Aktif
-                    </span>
-                  </div>
+            </div>
+            
+            <div className="bg-white shadow rounded-lg p-6 max-w-md mx-auto mb-8">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                👤 Kullanıcı Bilgileri
+              </h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span className="font-medium">Ad:</span>
+                  <span>{session.user?.name || 'Belirtilmemiş'}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">E-posta:</span>
+                  <span>{session.user?.email || 'Belirtilmemiş'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Rol:</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    session.user?.role === 'admin' 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {session.user?.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Durum:</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Aktif
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Welcome Message */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <h3 className="text-xl font-medium text-blue-900 mb-3">
+                🚀 Proje Başarıyla Çalışıyor!
+              </h3>
+              <p className="text-blue-700 mb-4">
+                Next.js + Auth0 + NextAuth.js entegrasyonu tamamlandı. 
+                MongoDB bağlantısı daha sonra eklenecek.
+              </p>
+              <div className="flex justify-center space-x-4">
+                <a
+                  href="/"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                >
+                  Ana Sayfa
+                </a>
+                <a
+                  href="/test"
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                >
+                  Test Sayfası
+                </a>
               </div>
             </div>
           </div>

@@ -1,54 +1,34 @@
 # Auth0 Kurulum Rehberi
 
+Bu rehber, Next.js projenizde Auth0 entegrasyonunu tamamlamak için gerekli adımları içerir.
+
 ## 1. Auth0 Hesabı Oluşturma
 
-1. [Auth0.com](https://auth0.com)'a gidin
-2. "Sign Up" butonuna tıklayın
-3. E-posta adresinizi ve şifrenizi girin
-4. Hesabınızı doğrulayın
+1. [Auth0 Dashboard](https://auth0.com/) adresine gidin
+2. Ücretsiz hesap oluşturun
+3. Yeni bir tenant (kiracı) oluşturun
 
-## 2. Yeni Uygulama Oluşturma
+## 2. Auth0 Application Oluşturma
 
-1. Auth0 Dashboard'a giriş yapın
-2. Sol menüden "Applications" seçin
-3. "Create Application" butonuna tıklayın
-4. Uygulama adını girin: `next-auth-app`
-5. Application Type olarak "Single Page Application" seçin
-6. "Create" butonuna tıklayın
+1. Auth0 Dashboard'da **Applications** > **Applications** bölümüne gidin
+2. **+ Create Application** butonuna tıklayın
+3. Application adını girin (örn: "Next.js App")
+4. **Single Page Application** seçin
+5. **Create** butonuna tıklayın
 
-## 3. Uygulama Ayarları
+## 3. Auth0 Application Ayarları
 
-### Settings Sekmesinde:
+### Settings Sekmesi:
+- **Allowed Callback URLs**: `http://localhost:3000/api/auth/callback/auth0`
+- **Allowed Logout URLs**: `http://localhost:3000`
+- **Allowed Web Origins**: `http://localhost:3000`
+- **Allowed Origins (CORS)**: `http://localhost:3000`
 
-**Allowed Callback URLs:**
-```
-http://localhost:3000/api/auth/callback/auth0
-```
+### Advanced Settings > OAuth:
+- **JsonWebToken Signature Algorithm**: `RS256`
+- **OIDC Conformant**: `Enabled`
 
-**Allowed Logout URLs:**
-```
-http://localhost:3000
-```
-
-**Allowed Web Origins:**
-```
-http://localhost:3000
-```
-
-**Allowed Origins (CORS):**
-```
-http://localhost:3000
-```
-
-## 4. Gerekli Bilgileri Alma
-
-Settings sekmesinden şu bilgileri kopyalayın:
-
-- **Domain**: `your-tenant.auth0.com`
-- **Client ID**: `your-client-id`
-- **Client Secret**: `your-client-secret`
-
-## 5. .env.local Dosyası Oluşturma
+## 4. Environment Variables
 
 Proje kök dizininde `.env.local` dosyası oluşturun:
 
@@ -56,69 +36,88 @@ Proje kök dizininde `.env.local` dosyası oluşturun:
 # Auth0 Configuration
 AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
 AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL='https://YOUR_DOMAIN.auth0.com'
-AUTH0_CLIENT_ID='YOUR_CLIENT_ID'
-AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
+AUTH0_ISSUER_BASE_URL='https://YOUR_AUTH0_DOMAIN.auth0.com'
+AUTH0_CLIENT_ID='YOUR_AUTH0_CLIENT_ID'
+AUTH0_CLIENT_SECRET='YOUR_AUTH0_CLIENT_SECRET'
 
 # NextAuth Configuration
 NEXTAUTH_URL='http://localhost:3000'
 NEXTAUTH_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
+
+# MongoDB Configuration (opsiyonel)
+MONGODB_URI='mongodb://localhost:27017/next-auth-app'
 ```
 
-## 6. Secret Değerleri Oluşturma
+### Değerleri Nereden Alacağınız:
 
-Terminal'de şu komutları çalıştırın:
+1. **AUTH0_ISSUER_BASE_URL**: Auth0 Dashboard > Applications > Your App > Settings > Domain
+2. **AUTH0_CLIENT_ID**: Auth0 Dashboard > Applications > Your App > Settings > Client ID
+3. **AUTH0_CLIENT_SECRET**: Auth0 Dashboard > Applications > Your App > Settings > Client Secret
+
+### Secret Değerleri Oluşturma:
+
+Terminal'de şu komutu çalıştırın:
+```bash
+openssl rand -hex 32
+```
+
+Bu komutun çıktısını hem `AUTH0_SECRET` hem de `NEXTAUTH_SECRET` için kullanın.
+
+## 5. Test Kullanıcısı Oluşturma
+
+1. Auth0 Dashboard > **User Management** > **Users**
+2. **+ Create User** butonuna tıklayın
+3. Kullanıcı bilgilerini girin:
+   - **Email**: test@gmail.com
+   - **Password**: 151548pPo0s02=^.94
+   - **Connection**: Username-Password-Authentication
+
+## 6. Projeyi Çalıştırma
 
 ```bash
-# Windows PowerShell için:
-openssl rand -hex 32
-
-# Veya online generator kullanın:
-# https://generate-secret.vercel.app/32
+npm run dev
 ```
 
 ## 7. Test Etme
 
-1. `.env.local` dosyasını oluşturduktan sonra
-2. Geliştirme sunucusunu yeniden başlatın: `npm run dev`
-3. `http://localhost:3000` adresine gidin
-4. Login sayfasını test edin
+1. `http://localhost:3000` adresine gidin
+2. "Auth0 ile Giriş Yap" butonuna tıklayın
+3. Auth0 login sayfasına yönlendirileceksiniz
+4. Test kullanıcısı bilgileriyle giriş yapın
+5. Başarılı girişten sonra dashboard'a yönlendirileceksiniz
 
 ## 8. Sorun Giderme
 
-### Yaygın Hatalar:
+### "only valid absolute URLs can be requested" Hatası
 
-1. **"Invalid redirect_uri" hatası**
-   - Auth0 Settings'de callback URL'yi kontrol edin
+Bu hata genellikle şu sebeplerden kaynaklanır:
 
-2. **"Invalid client" hatası**
-   - Client ID ve Client Secret'ı kontrol edin
+1. **AUTH0_ISSUER_BASE_URL yanlış format**: `https://` ile başlamalı
+2. **Environment variables eksik**: Tüm gerekli değişkenlerin tanımlı olduğundan emin olun
+3. **Auth0 Application ayarları**: Callback URL'lerin doğru olduğundan emin olun
 
-3. **"Invalid issuer" hatası**
-   - AUTH0_ISSUER_BASE_URL'yi kontrol edin
+### Test Sayfası
 
-## 9. Production Ayarları
+`http://localhost:3000/test` adresine giderek Auth0 yapılandırmasını test edebilirsiniz.
 
-Production için şu URL'leri ekleyin:
+## 9. Production Deployment
 
-**Allowed Callback URLs:**
-```
-https://your-domain.com/api/auth/callback/auth0
-```
+Production'a deploy ederken:
 
-**Allowed Logout URLs:**
-```
-https://your-domain.com
-```
-
-**Allowed Web Origins:**
-```
-https://your-domain.com
-```
+1. **AUTH0_BASE_URL** ve **NEXTAUTH_URL** değerlerini production URL'inizle değiştirin
+2. Auth0 Dashboard'da **Allowed Callback URLs** ve **Allowed Logout URLs**'i güncelleyin
+3. **AUTH0_SECRET** ve **NEXTAUTH_SECRET** değerlerini yeniden oluşturun
 
 ## 10. Güvenlik Notları
 
-- `.env.local` dosyasını asla Git'e commit etmeyin
+- `.env.local` dosyasını asla git'e commit etmeyin
 - Production'da güçlü secret değerleri kullanın
-- HTTPS kullanın
-- Auth0 Rules ve Hooks ile ek güvenlik katmanları ekleyin 
+- Auth0 Application ayarlarını düzenli olarak kontrol edin
+- HTTPS kullanın (production'da)
+
+## Yardım
+
+Sorun yaşarsanız:
+1. `/test` sayfasındaki yapılandırma kontrolünü kullanın
+2. Browser console'da hata mesajlarını kontrol edin
+3. Auth0 Dashboard'da Application logs'ları kontrol edin 

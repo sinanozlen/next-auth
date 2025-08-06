@@ -1,49 +1,159 @@
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import { useState } from 'react';
+
 export default function TestPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            🎉 Proje Başarıyla Çalışıyor!
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Next.js + Auth0 + NextAuth.js entegrasyonu hazır
-          </p>
-        </div>
-        
-        <div className="mt-8 space-y-6">
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            ✅ Next.js 14 App Router kuruldu
-          </div>
-          
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            ✅ TypeScript konfigürasyonu tamamlandı
-          </div>
-          
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            ✅ TailwindCSS entegrasyonu yapıldı
-          </div>
-          
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            ✅ NextAuth.js kurulumu tamamlandı
-          </div>
-          
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
-            ⚠️ Auth0 konfigürasyonu gerekli
-          </div>
-        </div>
-        
+  const { data: session, status } = useSession();
+  const [configStatus, setConfigStatus] = useState<any>(null);
+  const [loadingConfig, setLoadingConfig] = useState(false);
+
+  const checkAuth0Config = async () => {
+    setLoadingConfig(true);
+    try {
+      const response = await fetch('/api/test-auth0');
+      const data = await response.json();
+      setConfigStatus(data);
+    } catch (error) {
+      setConfigStatus({
+        success: false,
+        message: 'Yapılandırma kontrol edilemedi',
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
+      });
+    } finally {
+      setLoadingConfig(false);
+    }
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Sonraki Adımlar:
-          </h3>
-          <ol className="text-sm text-gray-600 space-y-2 text-left">
-            <li>1. Auth0 hesabı oluşturun</li>
-            <li>2. Yeni uygulama ekleyin (SPA)</li>
-            <li>3. .env.local dosyası oluşturun</li>
-            <li>4. Auth0 bilgilerini ekleyin</li>
-            <li>5. Login sayfasını test edin</li>
-          </ol>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Giriş yapılmamış</h1>
+          <p className="text-gray-600 mb-4">Bu sayfayı görüntülemek için giriş yapmanız gerekiyor.</p>
+          <a
+            href="/login"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            Giriş Yap
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Auth0 Test Sayfası</h1>
+          
+          <div className="space-y-6">
+            {/* Auth0 Config Check */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Auth0 Yapılandırması</h2>
+              <button
+                onClick={checkAuth0Config}
+                disabled={loadingConfig}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loadingConfig ? 'Kontrol ediliyor...' : 'Yapılandırmayı Kontrol Et'}
+              </button>
+              
+              {configStatus && (
+                <div className="mt-4 p-4 rounded-md border">
+                  <div className={`text-sm font-medium ${configStatus.success ? 'text-green-800' : 'text-red-800'}`}>
+                    {configStatus.message}
+                  </div>
+                  {configStatus.recommendations && configStatus.recommendations.length > 0 && (
+                    <div className="mt-2">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Öneriler:</h4>
+                      <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        {configStatus.recommendations.map((rec: string, index: number) => (
+                          <li key={index}>{rec}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <details className="mt-4">
+                    <summary className="text-sm font-medium text-gray-700 cursor-pointer">Detaylı Yapılandırma</summary>
+                    <pre className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-auto">
+                      {JSON.stringify(configStatus.config, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              )}
+            </div>
+
+            {/* Session Info */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-2">Oturum Bilgileri</h2>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <pre className="text-sm text-gray-700 overflow-auto">
+                  {JSON.stringify(session, null, 2)}
+                </pre>
+              </div>
+            </div>
+
+            {/* User Info */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-2">Kullanıcı Bilgileri</h2>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Ad</label>
+                    <p className="mt-1 text-sm text-gray-900">{session?.user?.name || 'Belirtilmemiş'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">E-posta</label>
+                    <p className="mt-1 text-sm text-gray-900">{session?.user?.email || 'Belirtilmemiş'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">ID</label>
+                    <p className="mt-1 text-sm text-gray-900">{session?.user?.id || 'Belirtilmemiş'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Rol</label>
+                    <p className="mt-1 text-sm text-gray-900">{session?.user?.role || 'user'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex space-x-4 pt-4">
+              <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+              >
+                Çıkış Yap
+              </button>
+              <a
+                href="/dashboard"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Dashboard'a Git
+              </a>
+              <a
+                href="/login"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Login Sayfası
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
